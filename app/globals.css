@@ -1,0 +1,28 @@
+    @tailwind base;
+    @tailwind components;
+    @tailwind utilities;
+
+    :root {
+      --bg: hsl(0, 0%, 98%);
+      --accent: hsl(220, 90%, 50%);
+      --primary: hsl(20, 90%, 50%);
+      --surface: hsl(0, 0%, 100%);
+      --text-primary: hsl(0, 0%, 15%);
+      --text-secondary: hsl(0, 0%, 45%);
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --radius-sm: 4px;
+      --radius-xl: 20px;
+      --shadow-card: 0 4px 16px hsla(0, 0%, 0%, 0.08);
+      --spacing-lg: 16px;
+      --spacing-md: 8px;
+      --spacing-sm: 4px;
+      --spacing-xl: 24px;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-inter);
+    }
+  
