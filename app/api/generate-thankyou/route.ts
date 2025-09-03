@@ -1,20 +1,48 @@
-    import { OpenAI } from 'openai';
-    import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getCachedOrGenerateThankYouNote, ThankYouStyle } from '@/lib/ai';
+import { tierOperations } from '@/lib/supabase';
+import { handleApiError } from '@/lib/error';
 
-    export async function POST(request: Request) {
-      const { message } = await request.json();
-
-      const openai = new OpenAI({
-        apiKey: process.env.OPENROUTER_API_KEY || '',
-        baseURL: "https://openrouter.ai/api/v1",
-        dangerouslyAllowBrowser: true,
-      });
-
-      const completion = await openai.chat.completions.create({
-        model: 'google/gemini-2.0-flash-001',
-        messages: [{ role: 'user', content: `Generate a personalized thank-you note for this fan message: ${message}` }],
-      });
-
-      return NextResponse.json({ note: completion.choices[0].message.content });
+export async function POST(request: NextRequest) {
+  try {
+    // Parse request body
+    const { message, amount, tierId, style } = await request.json();
+    
+    // Validate required fields
+    if (!amount) {
+      return NextResponse.json(
+        { error: 'Amount is required' },
+        { status: 400 }
+      );
     }
-  
+    
+    // Get tier name if tierId is provided
+    let tierName: string | undefined;
+    if (tierId) {
+      const { data: tier } = await tierOperations.getById(tierId);
+      if (tier) {
+        tierName = tier.name;
+      }
+    }
+    
+    // Generate thank-you note
+    const note = await getCachedOrGenerateThankYouNote(
+      message || '',
+      amount,
+      tierName,
+      style || ThankYouStyle.GRATEFUL
+    );
+    
+    // Return thank-you note
+    return NextResponse.json({ note });
+  } catch (error) {
+    // Handle error
+    const appError = handleApiError(error);
+    console.error('Error generating thank-you note:', appError);
+    
+    return NextResponse.json(
+      { error: appError.message },
+      { status: 500 }
+    );
+  }
+}
